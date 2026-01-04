@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String?
+
+  phone     String?
+  timezone  String?
+  language  String?
+
+  role      String   @default("USER") // USER | ADMIN
+  createdAt DateTime @default(now())
+
+  pets      Pet[]
+  agendas   AgendaEvent[]
+}
+
+model Pet {
+  id        Int      @id @default(autoincrement())
+  name      String
+  species   String
+  breed     String?
+  sex       String?
+  birthDate DateTime?
+  photoUrl  String?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  userId    Int
+  owner     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  healthEvents HealthEvent[]
+  weights      PetWeight[]
+  feedings     FeedingLog[]
+}
+
+model HealthEvent {
+  id          Int      @id @default(autoincrement())
+  type        String   @default("AUTRE")
+  title       String
+  description String?
+  eventDate   DateTime
+  createdAt   DateTime @default(now())
+
+  petId       Int
+  pet         Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  reminders   Reminder[]
+}
+
+model Reminder {
+  id            Int      @id @default(autoincrement())
+  remindAt      DateTime
+  sent          Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  healthEventId Int
+  healthEvent   HealthEvent @relation(fields: [healthEventId], references: [id], onDelete: Cascade)
+}
+
+model PetWeight {
+  id        Int      @id @default(autoincrement())
+  weightKg  Float
+  date      DateTime @default(now())
+
+  petId     Int
+  pet       Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
+}
+
+model FeedingLog {
+  id        Int      @id @default(autoincrement())
+  foodType  String
+  brand     String?
+  quantity  String?
+  time      DateTime @default(now())
+  notes     String?
+
+  petId     Int
+  pet       Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
+}
+
+model AgendaEvent {
+  id        Int      @id @default(autoincrement())
+  title     String
+  type      String?
+  startAt   DateTime
+  endAt     DateTime?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Service {
+  id        Int      @id @default(autoincrement())
+  name      String
+  type      String   @default("AUTRE") // VETERINAIRE | TOILETTEUR | AUTRE
+  address   String?
+  phone     String?
+  hours     String?
+  lat       Float?
+  lng       Float?
+  createdAt DateTime @default(now())
+}
